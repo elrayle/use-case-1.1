@@ -1,0 +1,17 @@
+<%= form_for(@virtual_collection_item) do |f| %>
+  <% if @virtual_collection_item.errors.any? %>
+    <div id="error_explanation">
+      <h2><%= pluralize(@virtual_collection_item.errors.count, "error") %> prohibited this virtual_collection_item from being saved:</h2>
+
+      <ul>
+      <% @virtual_collection_item.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="actions">
+    <%= f.submit %>
+  </div>
+<% end %>

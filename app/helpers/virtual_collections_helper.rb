@@ -1,0 +1,2 @@
+module VirtualCollectionsHelper
+end

@@ -1,0 +1,23 @@
+<h1>Listing virtual_collections</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th colspan="3"></th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @virtual_collections.each do |virtual_collection| %>
+      <tr>
+        <td><%= link_to 'Show', virtual_collection %></td>
+        <td><%= link_to 'Edit', edit_virtual_collection_path(virtual_collection) %></td>
+        <td><%= link_to 'Destroy', virtual_collection, method: :delete, data: { confirm: 'Are you sure?' } %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<br>
+
+<%= link_to 'New Virtual collection', new_virtual_collection_path %>
