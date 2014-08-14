@@ -1,6 +1,25 @@
 class VirtualCollectionsController < ApplicationController
   before_action :set_virtual_collection, only: [:show, :edit, :update, :destroy]
 
+
+
+
+  # TODO This class is under construction.  Nonthing has been tested.
+  # TODO Views have been generated with rails scaffold and tweaked a bit, but not completely coded or tested.
+
+
+
+
+  # Instance variables needed to be able to populate the virtual collection index page.
+  attr_accessor :my_collections
+  attr_accessor :my_watchlist
+  attr_accessor :selected_collection_id
+  attr_accessor :selected_collection_items
+  attr_accessor :items_per_page
+  attr_accessor :sort_by
+  attr_accessor :messages
+
+
   # GET /virtual_collections
   # GET /virtual_collections.json
   def index
@@ -89,4 +108,5 @@ class VirtualCollectionsController < ApplicationController
     def virtual_collection_params
       params[:virtual_collection]
     end
+
 end

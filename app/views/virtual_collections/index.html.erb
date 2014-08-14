@@ -1,3 +1,128 @@
+<div id="lhs">
+
+  <div id="lhs_mvc">
+    <div id="lhs_vcsearch"></div>
+    <h1 class="lhs_h1">My Virtual Collections</h1> <%= link_to '+', new_virtual_collection_path %>
+
+    <div id="lhs_vclist">
+      <% @my_collections.each do |vc| %>
+          <div <%= link_to '(i)', edit_virtual_collection_path(virtual_collection) %>
+    </div>
+
+    <div id="lhs_wvc">
+      <div id="lhs_vcsearch"></div>
+      <h1 class="lhs_h1">Watching Virtual Collections</h1> <%= link_to '+', find_public_virtual_collections_path %>
+
+      <div id="lhs_vclist">
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="rhs">
+
+  <div id="rhs_h1">@selected_collection[:title]</div>
+
+  <div id="rhs_messages">
+<% @selected_collection[:messages].each do |msg| %>
+    <div id="rhs_msg">msg</div>
+<% end %>
+  </div>
+
+  <div class="results-info span9">
+  <span class="results-count">
+
+  &laquo; Previous |  <strong>@selected_collection[:first_display_item]</strong> - <strong>@selected_collection[:last_display_item]</strong> of <strong>@selected_collection[:items_count]</strong> |  <a href="/?f%5Bformat%5D%5B%5D=Book&amp;page=2&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields" rel="next">Next &raquo;</a>
+
+
+
+  </span>
+
+
+    <div id="sort-dropdown" class="dropdown pull-right hidden-phone">
+      <ul class="css-dropdown">
+        <li class="btn">
+          <a href="#">Sort by relevance</a> <span class="caret"></span>
+          <ul>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=score+desc%2C+pub_date_sort+desc%2C+title_sort+asc">relevance</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=pub_date_sort+desc%2C+title_sort+asc">year descending</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=pub_date_sort+asc%2C+title_sort+asc">year ascending</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=author_sort+asc%2C+title_sort+asc">author A-Z</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=author_sort+desc%2C+title_sort+asc">author Z-A</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=title_sort+asc%2C+pub_date_sort+desc">title A-Z</a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields&amp;sort=title_sort+desc%2C+pub_date_sort+desc">title Z-A</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+
+    <div id="per_page-dropdown" class="dropdown pull-right  hidden-phone">
+      <span class="hide-text">Number of results to display per page</span>
+      <ul class="css-dropdown">
+        <li class="btn">
+          <a href="#">20 per page</a> <span class="caret"></span>
+          <ul>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;per_page=10&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields">10<span class="hide-text"> per page</span></a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;per_page=20&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields">20<span class="hide-text"> per page</span></a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;per_page=50&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields">50<span class="hide-text"> per page</span></a></li>
+            <li><a href="/?f%5Bformat%5D%5B%5D=Book&amp;per_page=100&amp;q=%28%2BTo+%2Bkill+%2Ba+%2BMockingbird%29+OR+%22To+kill+a+Mockingbird%22&amp;search_field=all_fields">100<span class="hide-text"> per page</span></a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+
+
+  </div>
+
+  <h2 class="hide-text">Items in selected virtual collection</h2>
+  <div id="documents">
+
+<% @selected_collection[:display_items].each do |item| %>
+    <div class="document blacklight-book clearfix" data-bibid="<%= item[:bib_id] %>">
+      <div class="iconcover bookcover" id="OCLC:<%= item[:oclc_id] %>" data-oclc="<%= item[:oclc_id] %>">
+        <img class="img-polaroid" src="/assets/cornell/layout/placeholder-item.png" alt="">
+        <i class="fa fa-book"></i>
+      </div>
+
+      <div class="document-data">
+        <div class="select-item">      <form accept-charset="UTF-8" action="/bookmarks/<%= item[:bib_id] %>" class="list_toggle" data-doc-id="<%= item[:bib_id] %>" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="_method" type="hidden" value="put" /><input name="authenticity_token" type="hidden" value="SFvdTxMhxExByZSU55gKELLYp9BpfIHYGZ87S/40wDU=" /></div>
+          <input class="bookmark_add" id="bookmark_toggle_<%= item[:bib_id] %>" name="commit" type="submit" value="Select" />
+        </form>
+        </div>
+
+        <h2 class="blacklight-title_display">
+          1.
+
+          <a href="/catalog/<%= item[:bib_id] %>" data-counter="1"><%= item[:title] %></a>
+          <span class="blacklight-pub_date_display"><%= item[:pub_date] %></span>
+        </h2>
+
+
+
+        <span class="blacklight-title_uniform_display"></span>
+
+        <div class="data-block">
+          <span class="blacklight-author_display"><%= item[:author] %></span>
+          <span class="format"><i class="fa fa-book"></i> <%= item[:format] %></span>
+          <span class="blacklight-pub_info_display"><%= item[:pub_info] %></span>
+          <span class="blacklight-language_display"><%= item[:language] %></span>
+          <span class="blacklight-edition_display"><%= item[:edition] %></span>
+        </div>
+
+
+        <div id="blacklight-avail-<%= item[:bib_id] %>" class="status">
+          <span class="preloader">Checking availability</span>
+        </div>
+        <abbr class="unapi-id" title="<%= item[:bib_id] %>"></abbr>
+
+      </div>
+    </div>
+<% end %>
+  </div>  <!-- end div documents -->
+</div>
+
 <h1>Listing virtual_collections</h1>
 
 <table>
@@ -11,7 +136,7 @@
     <% @virtual_collections.each do |virtual_collection| %>
       <tr>
         <td><%= link_to 'Show', virtual_collection %></td>
-        <td><%= link_to 'Edit', edit_virtual_collection_path(virtual_collection) %></td>
+        <td></td>
         <td><%= link_to 'Destroy', virtual_collection, method: :delete, data: { confirm: 'Are you sure?' } %></td>
       </tr>
     <% end %>
@@ -20,4 +145,4 @@
 
 <br>
 
-<%= link_to 'New Virtual collection', new_virtual_collection_path %>
+

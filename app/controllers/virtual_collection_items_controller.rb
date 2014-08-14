@@ -1,6 +1,27 @@
 class VirtualCollectionItemsController < ApplicationController
   before_action :set_virtual_collection_item, only: [:show, :edit, :update, :destroy]
 
+
+
+
+  # TODO This class is under construction.  Nonthing has been tested.
+  # TODO Views have been generated with rails scaffold and tweaked a bit, but not completely coded or tested.
+
+
+
+
+  # Instance variables needed to hold information about each item needed for display in the list of items on the
+  # My Virtual Collections page.
+  attr_accessor :title
+  attr_accessor :author
+  attr_accessor :pub_date
+  attr_accessor :description
+  attr_accessor :location
+  attr_accessor :thumbnail
+  attr_accessor :comments
+  attr_accessor :comments_show
+  attr_accessor :tags
+
   # GET /virtual_collection_items
   # GET /virtual_collection_items.json
   def index

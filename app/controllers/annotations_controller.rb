@@ -2,7 +2,9 @@ class AnnotationsController < ApplicationController
   before_action :set_annotation, only: [:show, :edit, :update, :destroy]
 
 
-#
+
+
+  # TODO This class is under construction.  Nonthing has been tested.
 
 
 

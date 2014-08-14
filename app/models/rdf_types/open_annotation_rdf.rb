@@ -1,5 +1,8 @@
 module RdfTypes
   class OpenAnnotationRDF < ActiveTriples::Resource
+
+    ID_PREFIX = 'oa'
+
     configure :type => OA.Annotation, :base_uri => "http://localhost:3000/annotations"
 
     property :hasTarget, :predicate => RdfVocabularies::OA.hasTarget, :type => URI
