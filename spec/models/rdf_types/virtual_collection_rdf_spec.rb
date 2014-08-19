@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class VirtualCollectionTest < ActiveSupport::TestCase
+class VirtualCollectionRdfSpec < ActiveSupport::TestCase
   # test "the truth" do
   #   assert true
   # end

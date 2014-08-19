@@ -1,5 +1,10 @@
 module RdfTypes
-  class VirtualCollectionRdf < ActiveTriples::Resource
+  # class VirtualCollectionRdf < ActiveTriples::Resource
+  # class VirtualCollectionRdf < RdfTypes::RdfBaseResource
+  class VirtualCollectionRdf < RdfTypes::RdfBaseURI
+
+    # extend RdfTypes::RdfBaseURI
+    @id_prefix="vc"
 
     # can't include the /vc as part of the base_uri or the URI gets generated as...
     #    http://localhost:3000/vc/123
@@ -9,7 +14,8 @@ module RdfTypes
     # User calls vc = RdfTypes::VirtualCollectionRdf.new('123')
     # And overriding new passes on .new("vc#{id}")  where id='123'   (pseudo code)
 
-    ID_PREFIX = 'vc'
+
+    # puts("After local id_prefix method defined -- #{self.id_prefix}")
 
     # configure :type => RdfVocabularies::CO.List, :base_uri => 'http://localhost:3000'
     configure :type => RdfVocabularies::ORE.Aggregation, :base_uri => 'http://localhost:3000'
@@ -29,5 +35,12 @@ module RdfTypes
 #    property :aggregates,   :predicate => RdfVocabularies::ORE.aggregates,   :type => URI        # TODO: how to make multiple???
     property :aggregates,   :predicate => RdfVocabularies::ORE.aggregates        # TODO: how to make multiple???
 
+    def test_get_uri
+      test_uri = get_uri('987')
+      test_uri = self::get_uri('876')
+      puts test_uri
+    end
   end
 end
+
+
