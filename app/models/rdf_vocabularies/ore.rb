@@ -1,4 +1,4 @@
-module RdfVocabularies
+module RDFVocabularies
   class ORE < RDF::Vocabulary("http://www.openarchives.org/ore/terms/")
 
     # Class definitions

@@ -1,12 +1,12 @@
-module RdfTypes
-  class OpenAnnotationBodyRDF < ActiveTriples::Resource
+module RDFTypes
+  class OpenAnnotationBodyRDF < RDFTypes::ResourceExtension
 
-    ID_PREFIX = 'oab'
+    @id_prefix="oab"
 
-    configure :base_uri => "http://localhost:3000/annotations/bodies"
+    configure :base_uri => "http://localhost:3000/individual/"
 
-    property :type, :predicate => RDF::type, :type => URI      # TODO: How to have multiple types?
-    property :content, :predicate => RdfVocabularies::CNT.chars, :type => XSD.string
-    property :format,  :predicate => RDF::DC.format, :type => XSD.string
+    property :type,    :predicate => RDF::type                   # :type => URI      # TODO: How to have multiple types?
+    property :content, :predicate => RDFVocabularies::CNT.chars  # :type => XSD.string
+    property :format,  :predicate => RDF::DC.format              # :type => XSD.string
   end
 end

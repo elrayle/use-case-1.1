@@ -1,20 +1,20 @@
-module RdfTypes
-  class VirtualCollectionItemRdf < ActiveTriples::Resource
+module RDFTypes
+  class VirtualCollectionItemRDF < RDFTypes::ResourceExtension
 
-    ID_PREFIX = 'vci'
+    @id_prefix="vci"
 
-    # configure :type => CO.ListItem, :base_uri => 'http://localhost:3000'
-    configure :type => ORE.Proxy, :base_uri => 'http://localhost:3000'
+    # configure :type => RDFVocabularies::CO.ListItem, :base_uri => 'http://localhost:3000'
+    configure :type => RDFVocabularies::ORE.Proxy, :base_uri => 'http://localhost:3000/individual/'
 
     # # properties from CO.ListItem
-    # property :index,       :predicate => CO.index
-    # property :itemContent, :predicate => CO.itemContent
-    # property :nextItem,    :predicate => CO.nextItem          # TODO: can we set a default value of nil?
+    # property :index,       :predicate => RDFVocabularies::CO.index
+    # property :itemContent, :predicate => RDFVocabularies::CO.itemContent
+    # property :nextItem,    :predicate => RDFVocabularies::CO.nextItem          # TODO: can we set a default value of nil?
 
     # properties from ORE.Proxy
-    property :proxyFor,         :predicate => ORE.proxyFor
-    property :proxyIn,           :predicate => ORE.proxyIn
-    property :next,                :predicate => IANA.next
-    property :contributor,      :predicate => DC.contributor
+    property :proxyFor,         :predicate => RDFVocabularies::ORE.proxyFor
+    property :proxyIn,          :predicate => RDFVocabularies::ORE.proxyIn
+    property :next,             :predicate => RDFVocabularies::IANA.next
+    property :contributor,      :predicate => RDF::DC.contributor
   end
 end

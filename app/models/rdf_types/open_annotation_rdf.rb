@@ -1,13 +1,13 @@
-module RdfTypes
-  class OpenAnnotationRDF < ActiveTriples::Resource
+module RDFTypes
+  class OpenAnnotationRDF < RDFTypes::ResourceExtension
 
-    ID_PREFIX = 'oa'
+    @id_prefix="oa"
 
-    configure :type => OA.Annotation, :base_uri => "http://localhost:3000/annotations"
+    configure :type => RDFVocabularies::OA.Annotation, :base_uri => "http://localhost:3000/individual/"
 
-    property :hasTarget, :predicate => RdfVocabularies::OA.hasTarget, :type => URI
-    property :hasBody, :predicate => RdfVocabularies::OA.hasBody, :type => URI
-    property :motivatedBy, :predicate => RdfVocabularies::OA.motivatedBy, :type => URI
+    property :hasTarget,   :predicate => RDFVocabularies::OA.hasTarget    # :type => URI
+    property :hasBody,     :predicate => RDFVocabularies::OA.hasBody      # :type => URI
+    property :motivatedBy, :predicate => RDFVocabularies::OA.motivatedBy  # :type => URI
   end
 end
 

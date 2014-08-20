@@ -1,4 +1,4 @@
-module RdfVocabularies
+module RDFVocabularies
   class CO < RDF::Vocabulary("http://purl.org/co#")
 
     # Class definitions

@@ -1,6 +1,6 @@
-module RdfTypes
+module RDFTypes
   # module RdfBaseURI
-  class RdfBaseURI < ActiveTriples::Resource
+  class ResourceExtension < ActiveTriples::Resource
 
     class << self
       attr_accessor :id_prefix
@@ -9,7 +9,7 @@ module RdfTypes
 
     def id_prefix
       if(defined? self.class.id_prefix)
-        prefix = self.class.id_prefix.nil?  ? RdfTypes::RdfBaseURI.id_prefix : self.class.id_prefix
+        prefix = self.class.id_prefix.nil?  ? RDFTypes::ResourceExtension.id_prefix : self.class.id_prefix
       end
       prefix
     end

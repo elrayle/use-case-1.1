@@ -1,4 +1,4 @@
-module RdfVocabularies
+module RDFVocabularies
   class OA < RDF::Vocabulary("http://www.w3.org/ns/oa#")
 
     # Class definitions

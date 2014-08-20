@@ -1,6 +1,6 @@
-module RdfTypes
-  class TagAnnotationRDF < RdfTypes::OpenAnnotationRDF
-    ID_PREFIX = 'tg'
+module RDFTypes
+  class TagAnnotationRDF < RDFTypes::OpenAnnotationRDF
+    @id_prefix="tg"
   end
 end
 
