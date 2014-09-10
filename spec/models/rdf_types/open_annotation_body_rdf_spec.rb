@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-describe 'VirtualCollectionItemRDF' do
+describe 'OpenAnnotationBodyRDF' do
   # it_behaves_like 'an ActiveTriple::Resource'
 
-  subject { RDFTypes::VirtualCollectionItemRDF.new }  # new virtual collection without a subject
+  subject { RDFTypes::OpenAnnotationBodyRDF.new }  # new virtual collection without a subject
 
   describe 'rdf_subject' do
     it "should be a blank node if we haven't set it" do
@@ -17,7 +17,7 @@ describe 'VirtualCollectionItemRDF' do
 
     it "should append to base URI when setting to non-URI subject" do
       subject.set_subject! '123'
-      expect(subject.rdf_subject).to eq RDF::URI("#{RDFTypes::VirtualCollectionItemRDF.base_uri}/#{RDFTypes::VirtualCollectionItemRDF.id_prefix}123")
+      expect(subject.rdf_subject).to eq RDF::URI("#{RDFTypes::OpenAnnotationBodyRDF.base_uri}/#{RDFTypes::OpenAnnotationBodyRDF.id_prefix}123")
     end
 
     describe 'when changing subject' do
@@ -58,68 +58,76 @@ describe 'VirtualCollectionItemRDF' do
   # -------------------------------------------------
 
   describe 'type' do
-    it "should be an RDFVocabularies::ORE.Proxy" do
-      expect(subject.type.first.value).to eq RDFVocabularies::ORE.Proxy.value
-    end
-  end
-
-  describe 'proxyIn' do
     it "should be empty array if we haven't set it" do
-      expect(subject.proxyIn).to match_array([])
+      expect(subject.type).to match_array([])
     end
 
-    it "should be settable" do
-      a_virtual_collection = RDFTypes::VirtualCollectionRDF.new('1')
-      subject.proxyIn = a_virtual_collection
-      expect(subject.proxyIn.first).to eq a_virtual_collection
+    it "should be an settable" do
+      subject.type = RDFVocabularies::DCTYPES.text
+      expect(subject.type.first.rdf_subject).to eq RDFVocabularies::DCTYPES.text
+    end
+
+    it "should be settable to multiple values" do
+      subject.type = RDFVocabularies::DCTYPES.text
+      subject.type << RDFVocabularies::CNT.chars
+      expect(subject.type[0].rdf_subject).to eq RDFVocabularies::DCTYPES.text
+      expect(subject.type[1].rdf_subject).to eq RDFVocabularies::CNT.chars
     end
 
     it "should be changeable" do
-      orig_virtual_collection = RDFTypes::VirtualCollectionRDF.new('1')
-      new_virtual_collection = RDFTypes::VirtualCollectionRDF.new('2')
-      subject.proxyIn = orig_virtual_collection
-      subject.proxyIn = new_virtual_collection
-      expect(subject.proxyIn.first).to eq new_virtual_collection
+      subject.type = RDFVocabularies::DCTYPES.text
+      subject.type = RDFVocabularies::CNT.chars
+      expect(subject.type.first.rdf_subject).to eq RDFVocabularies::CNT.chars
+    end
+
+    it "should be changeable for multiple values" do
+      subject.type = RDFVocabularies::DCTYPES.text
+      subject.type << RDFVocabularies::CNT.chars
+      subject.type[0] = RDFVocabularies::OA.commenting    # dummy type for testing
+      subject.type[1] << RDFVocabularies::OA.tagging      # dummy type for testing
+      expect(subject.type[0].rdf_subject).to eq RDFVocabularies::OA.commenting
+      expect(subject.type[1].rdf_subject).to eq RDFVocabularies::OA.tagging
     end
   end
 
-  describe 'next' do
+  # XXX property :type,    :predicate => RDF::type                   # :type => URI      # TODO: How to have multiple types?
+  # XXX property :content, :predicate => RDFVocabularies::CNT.chars  # :type => XSD.string
+  # property :format,  :predicate => RDF::DC.format              # :type => XSD.string
+
+  describe 'content' do
     it "should be empty array if we haven't set it" do
-      expect(subject.next).to match_array([])
+      expect(subject.content).to match_array([])
     end
 
     it "should be settable" do
-      a_virtual_collection_item = RDFTypes::VirtualCollectionItemRDF.new('1')
-      subject.next = a_virtual_collection_item
-      expect(subject.next.first).to eq a_virtual_collection_item
+      subject.content = "bla"
+      expect(subject.content).to eq ["bla"]
     end
 
     it "should be changeable" do
-      orig_virtual_collection_item = RDFTypes::VirtualCollectionItemRDF.new('1')
-      new_virtual_collection_item = RDFTypes::VirtualCollectionItemRDF.new('2')
-      subject.next = orig_virtual_collection_item
-      subject.next = new_virtual_collection_item
-      expect(subject.next.first).to eq new_virtual_collection_item
+      subject.content = "bla"
+      subject.content = "new bla"
+      expect(subject.content).to eq ["new bla"]
     end
   end
 
-  describe 'contributor' do
+  describe 'format' do
     it "should be empty array if we haven't set it" do
-      expect(subject.contributor).to match_array([])
+      expect(subject.format).to match_array([])
     end
 
     it "should be settable" do
-      a_person = RDFTypes::PersonRDF.new('1')
-      subject.contributor = a_person
-      expect(subject.contributor.first).to eq a_person
+      a_format = RDFVocabularies::CNT.chars
+      subject.format = a_format
+      expect(subject.format.first.rdf_subject).to eq a_format
     end
 
     it "should be changeable" do
-      orig_person = RDFTypes::PersonRDF.new('1')
-      new_person = RDFTypes::PersonRDF.new('2')
-      subject.contributor = orig_person
-      subject.contributor = new_person
-      expect(subject.contributor.first).to eq  new_person
+      orig_format = RDFVocabularies::CNT.chars
+      new_format  = RDFVocabularies::DCTYPES.text
+      subject.format = orig_format
+      subject.format = new_format
+      expect(subject.format.first.rdf_subject).to eq  new_format
     end
   end
 
@@ -144,7 +152,7 @@ describe 'VirtualCollectionItemRDF' do
 
       context "when it is saved" do
         before do
-          subject.contributor = "John Smith"
+          subject.content = "bla"
           subject.persist!
         end
 
@@ -154,7 +162,7 @@ describe 'VirtualCollectionItemRDF' do
 
         context "and then modified" do
           before do
-            subject.contributor = "New Smith"
+            subject.content = "newbla"
           end
 
           it "should return true" do
@@ -166,8 +174,8 @@ describe 'VirtualCollectionItemRDF' do
             subject.reload
           end
 
-          it "should reset the contributor" do
-            expect(subject.contributor).to eq ["John Smith"]
+          it "should reset the content" do
+            expect(subject.content).to eq ["bla"]
           end
 
           it "should be persisted" do
@@ -182,14 +190,14 @@ describe 'VirtualCollectionItemRDF' do
     context "when the repository is set" do
       context "and the item is not a blank node" do
 
-        subject {RDFTypes::VirtualCollectionItemRDF.new("123")}
+        subject {RDFTypes::OpenAnnotationBodyRDF.new("123")}
 
         before do
           # Create inmemory repository
           @repo = RDF::Repository.new
           allow(subject.class).to receive(:repository).and_return(nil)
           allow(subject).to receive(:repository).and_return(@repo)
-          subject.contributor = "John Smith"
+          subject.content = "bla"
           subject.persist!
         end
 
@@ -199,13 +207,13 @@ describe 'VirtualCollectionItemRDF' do
 
         it "should delete from the repository" do
           subject.reload
-          expect(subject.contributor).to eq ["John Smith"]
-          subject.contributor = []
-          expect(subject.contributor).to eq []
+          expect(subject.content).to eq ["bla"]
+          subject.content = []
+          expect(subject.content).to eq []
           subject.persist!
           subject.reload
-          expect(subject.contributor).to eq []
-          expect(@repo.statements.to_a.length).to eq 1 # Only the type statement
+          expect(subject.content).to eq []
+          expect(@repo.statements.to_a.length).to eq 0 # NOTE: OpenAnnotationBodyRDF does not explicitly set type since each annotation can be of a different type
         end
       end
     end
@@ -216,7 +224,7 @@ describe 'VirtualCollectionItemRDF' do
       subject << RDF::Statement(RDF::DC.LicenseDocument, RDF::DC.title, 'LICENSE')
     end
 
-    subject { RDFTypes::PersonRDF.new('456')}
+    subject { RDFTypes::OpenAnnotationBodyRDF.new('456')}
 
     it 'should return true' do
       expect(subject.destroy!).to be true
@@ -227,140 +235,17 @@ describe 'VirtualCollectionItemRDF' do
       subject.destroy
       expect(subject).to be_empty
     end
-
-    context 'with a parent' do
-      before do
-        parent.contributor = subject
-      end
-
-      let(:parent) do
-        RDFTypes::VirtualCollectionItemRDF.new('123')
-      end
-
-      it 'should empty the graph and remove it from the parent' do
-        subject.destroy
-        expect(parent.contributor).to be_empty
-      end
-
-      it 'should remove its whole graph from the parent' do
-        subject.destroy
-        subject.each_statement do |s|
-          expect(parent.statements).not_to include s
-        end
-      end
-    end
-  end
-
-  describe 'attributes' do
-    before do
-      subject.contributor = contributor
-      subject.proxyFor = 'Dummy Proxy'
-    end
-
-    subject {RDFTypes::VirtualCollectionItemRDF.new("123")}
-
-    let(:contributor) { RDFTypes::PersonRDF.new('456') }
-
-    it 'should return an attributes hash' do
-      expect(subject.attributes).to be_a Hash
-    end
-
-    it 'should contain data' do
-      expect(subject.attributes['proxyFor']).to eq ['Dummy Proxy']
-    end
-
-    it 'should contain child objects' do
-      expect(subject.attributes['contributor']).to eq [contributor]
-    end
-
-    context 'with unmodeled data' do
-      before do
-        subject << RDF::Statement(subject.rdf_subject, RDF::DC.creator, 'Tove Jansson')
-        subject << RDF::Statement(subject.rdf_subject, RDF::DC.relation, RDF::URI('http://example.org/moomi'))
-        node = RDF::Node.new
-        subject << RDF::Statement(RDF::URI('http://example.org/moomi'), RDF::DC.relation, node)
-        subject << RDF::Statement(node, RDF::DC.title, 'bnode')
-      end
-
-      it 'should include data with URIs as attribute names' do
-        expect(subject.attributes[RDF::DC.creator.to_s]).to eq ['Tove Jansson']
-      end
-
-      it 'should return generic Resources' do
-        expect(subject.attributes[RDF::DC.relation.to_s].first).to be_a ActiveTriples::Resource
-      end
-
-      it 'should build deep data for Resources' do
-        expect(subject.attributes[RDF::DC.relation.to_s].first.get_values(RDF::DC.relation).
-                   first.get_values(RDF::DC.title)).to eq ['bnode']
-      end
-
-      it 'should include deep data in serializable_hash' do
-        expect(subject.serializable_hash[RDF::DC.relation.to_s].first.get_values(RDF::DC.relation).
-                   first.get_values(RDF::DC.title)).to eq ['bnode']
-      end
-    end
-
-    describe 'attribute_serialization' do
-      describe '#to_json' do
-        it 'should return a string with correct objects' do
-          json_hash = JSON.parse(subject.to_json)
-          expect(json_hash['contributor'].first['id']).to eq contributor.rdf_subject.to_s
-        end
-      end
-    end
-  end
-
-  describe 'property methods' do
-    it 'should set and get properties' do
-      subject.proxyFor = 'Comet in Moominland'
-      expect(subject.proxyFor).to eq ['Comet in Moominland']
-    end
-  end
-
-  describe 'child nodes' do
-    it 'should return an object of the correct class when the value is built from the base URI' do
-      subject.contributor = RDFTypes::PersonRDF.new('456')
-      expect(subject.contributor.first).to be_kind_of RDFTypes::PersonRDF
-    end
-
-    it 'should return an object with the correct URI created with a URI' do
-      subject.contributor = RDFTypes::PersonRDF.new("http://example.org/license")
-      expect(subject.contributor.first.rdf_subject).to eq RDF::URI("http://example.org/license")
-    end
-
-    it 'should return an object of the correct class when the value is a bnode' do
-      subject.contributor = RDFTypes::PersonRDF.new
-      expect(subject.contributor.first).to be_kind_of RDFTypes::PersonRDF
-    end
-  end
-
-  describe '#type' do
-    it 'should return the type configured on the parent class' do
-      expect(subject.type).to eq [RDFTypes::VirtualCollectionItemRDF.type]
-    end
-
-    it 'should set the type' do
-      subject.type = RDF::URI('http://example.org/AnotherClass')
-      expect(subject.type).to eq [RDF::URI('http://example.org/AnotherClass')]
-    end
-
-    it 'should be the type in the graph' do
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF.type).statements do |s|
-        expect(s.object).to eq RDF::URI('http://example.org/AnotherClass')
-      end
-    end
   end
 
   describe '#rdf_label' do
-    subject {RDFTypes::VirtualCollectionItemRDF.new("123")}
+    subject {RDFTypes::OpenAnnotationBodyRDF.new("123")}
 
     it 'should return an array of label values' do
       expect(subject.rdf_label).to be_kind_of Array
     end
 
     it 'should return the default label as URI when no title property exists' do
-      expect(subject.rdf_label).to eq [RDF::URI("#{RDFTypes::VirtualCollectionItemRDF.base_uri}/#{RDFTypes::VirtualCollectionItemRDF.id_prefix}123")]
+      expect(subject.rdf_label).to eq [RDF::URI("#{RDFTypes::OpenAnnotationBodyRDF.base_uri}/#{RDFTypes::OpenAnnotationBodyRDF.id_prefix}123")]
     end
 
     it 'should prioritize configured label values' do
@@ -384,14 +269,14 @@ describe 'VirtualCollectionItemRDF' do
 
   describe 'editing the graph' do
     it 'should write properties when statements are added' do
-      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::ORE.proxyFor, 'Comet in Moominland')
-      expect(subject.proxyFor).to include 'Comet in Moominland'
+      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::CNT.chars, 'Great book!')
+      expect(subject.content).to include 'Great book!'
     end
 
     it 'should delete properties when statements are removed' do
-      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::ORE.proxyFor, 'Comet in Moominland')
-      subject.delete RDF::Statement.new(subject.rdf_subject, RDFVocabularies::ORE.proxyFor, 'Comet in Moominland')
-      expect(subject.proxyFor).to eq []
+      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::CNT.chars, 'Great book!')
+      subject.delete RDF::Statement.new(subject.rdf_subject, RDFVocabularies::CNT.chars, 'Great book!')
+      expect(subject.content).to eq []
     end
   end
 
@@ -410,10 +295,10 @@ describe 'VirtualCollectionItemRDF' do
         property :creator, :predicate => RDF::DC.creator, :class_name => 'DummyPerson'
       end
 
-      RDFTypes::VirtualCollectionItemRDF.property :item, :predicate => RDF::DC.relation, :class_name => DummyDocument
+      RDFTypes::OpenAnnotationBodyRDF.property :item, :predicate => RDF::DC.relation, :class_name => DummyDocument
     end
 
-    subject { RDFTypes::VirtualCollectionItemRDF.new }
+    subject { RDFTypes::OpenAnnotationBodyRDF.new }
 
     let (:document1) do
       d = DummyDocument.new

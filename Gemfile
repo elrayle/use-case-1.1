@@ -3,8 +3,6 @@ source 'https://rubygems.org'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails'
 gem 'rails', '4.1.1'
-# Use sqlite3 as the database for Active Record
-gem 'sqlite3'
 # Use SCSS for stylesheets
 gem 'sass-rails', '~> 4.0.3'
 # Use Uglifier as compressor for JavaScript assets
@@ -40,3 +38,15 @@ gem 'spring',        group: :development
 
 # Use active-triple for handling of triple persistence
 gem "active-triples"
+
+group :development do
+  # setup sqlite3 as the persistance triplestore for ActiveTriples
+  gem 'sqlite3'
+  gem 'rdf-do'
+  gem 'do_sqlite3'
+end
+
+group :test do
+  # use rspec for tests
+  gem 'rspec-rails', '~> 3.0.2'
+end

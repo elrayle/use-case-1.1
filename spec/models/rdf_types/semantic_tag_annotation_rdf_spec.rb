@@ -1,22 +1,23 @@
-require 'spec_helper'
+require 'rails_helper'
 
-describe RdfTypes::VirtualCollection do
-  it_behaves_like 'an ActiveTriple::Resource'
+describe 'SemanticTagAnnotationRDF' do
+  # it_behaves_like 'an ActiveTriple::Resource'
 
-  subject { RdfTypes::VirtualCollection.new }  # new virtual collection without a subject
+  subject { RDFTypes::SemanticTagAnnotationRDF.new }  # new virtual collection without a subject
 
   describe 'rdf_subject' do
     it "should be a blank node if we haven't set it" do
       expect(subject.rdf_subject.node?).to be true
     end
 
-    it "should be settable" do
+    it "should be settable when it has not been set yet" do
       subject.set_subject! RDF::URI('http://example.org/moomin')
       expect(subject.rdf_subject).to eq RDF::URI('http://example.org/moomin')
     end
 
-    it "should raise an error when setting to an invalid uri" do
-      expect{ subject.set_subject!('not_a_uri') }.to raise_error "could not make a valid RDF::URI from not_a_uri"
+    it "should append to base URI when setting to non-URI subject" do
+      subject.set_subject! '123'
+      expect(subject.rdf_subject).to eq RDF::URI("#{RDFTypes::SemanticTagAnnotationRDF.base_uri}/#{RDFTypes::SemanticTagAnnotationRDF.id_prefix}123")
     end
 
     describe 'when changing subject' do
@@ -40,7 +41,7 @@ describe RdfTypes::VirtualCollection do
       end
     end
 
-    describe 'with URI subject' do
+    describe 'created with URI subject' do
       before do
         subject.set_subject! RDF::URI('http://example.org/moomin')
       end
@@ -51,9 +52,120 @@ describe RdfTypes::VirtualCollection do
     end
   end
 
+
+  # -------------------------------------------------
+  #  START -- Test attributes specific to this model
+  # -------------------------------------------------
+
+  describe 'type' do
+    it "should be an RDFVocabularies::OA.SemanticTag" do
+      expect(subject.type.first.value).to eq RDFVocabularies::OA.SemanticTag.value
+    end
+  end
+
+  describe 'hasTarget' do
+    it "should be empty array if we haven't set it" do
+      expect(subject.hasTarget).to match_array([])
+    end
+
+    it "should be settable" do
+      subject.hasTarget = RDF::URI("http://example.org/b123")
+      expect(subject.hasTarget.first.rdf_subject.to_s).to eq "http://example.org/b123"
+    end
+
+    it "should be changeable" do
+      subject.hasTarget = RDF::URI("http://example.org/b123")
+      subject.hasTarget = RDF::URI("http://example.org/b123_NEW")
+      expect(subject.hasTarget.first.rdf_subject.to_s).to eq "http://example.org/b123_NEW"
+    end
+  end
+
+  describe 'hasBody' do
+    it "should be empty array if we haven't set it" do
+      expect(subject.hasBody).to match_array([])
+    end
+
+    it "should be settable" do
+      a_open_annotation_body = RDFTypes::OpenAnnotationBodyRDF.new('1')
+      subject.hasBody = a_open_annotation_body
+      expect(subject.hasBody.first).to eq a_open_annotation_body
+    end
+
+    it "should be changeable" do
+      orig_open_annotation_body = RDFTypes::OpenAnnotationBodyRDF.new('1')
+      new_open_annotation_body = RDFTypes::OpenAnnotationBodyRDF.new('2')
+      subject.hasBody = orig_open_annotation_body
+      subject.hasBody = new_open_annotation_body
+      expect(subject.hasBody.first).to eq new_open_annotation_body
+    end
+  end
+
+  describe 'annotatedBy' do
+    it "should be empty array if we haven't set it" do
+      expect(subject.annotatedBy).to match_array([])
+    end
+
+    it "should be settable" do
+      a_person = RDFTypes::PersonRDF.new('1')
+      subject.annotatedBy = a_person
+      expect(subject.annotatedBy.first).to eq a_person
+    end
+
+    it "should be changeable" do
+      orig_person = RDFTypes::PersonRDF.new('1')
+      new_person = RDFTypes::PersonRDF.new('2')
+      subject.annotatedBy = orig_person
+      subject.annotatedBy = new_person
+      expect(subject.annotatedBy.first).to eq new_person
+    end
+  end
+
+  describe 'annotatedAt' do
+    it "should be empty array if we haven't set it" do
+      expect(subject.annotatedAt).to match_array([])
+    end
+
+    it "should be settable" do
+      a_time = Time::now.strftime("%Y-%m-%dT%H:%M:%S.%L%z")
+      subject.annotatedAt = a_time
+      expect(subject.annotatedAt.first).to eq a_time
+    end
+
+    it "should be changeable" do
+      orig_time = Time.local(2014, 6, 1, 8, 30).strftime("%Y-%m-%dT%H:%M:%S.%L%z")
+      new_time = Time.now.strftime("%Y-%m-%dT%H:%M:%S.%L%z")
+      subject.annotatedAt = orig_time
+      subject.annotatedAt = new_time
+      expect(subject.annotatedAt.first).to eq new_time
+    end
+  end
+
+  describe 'motivatedBy' do
+    it "should be OA.tagging if we haven't set it" do
+      expect(subject.motivatedBy.first.rdf_subject).to RDFVocabularies::OA.tagging
+    end
+
+    it "should be settable" do
+      subject.motivatedBy = RDFVocabularies::OA.describing
+      expect(subject.motivatedBy.first.rdf_subject).to eq RDFVocabularies::OA.describing
+    end
+
+    it "should be changeable" do
+      subject.motivatedBy = RDFVocabularies::OA.describing
+      subject.motivatedBy = RDFVocabularies::OA.classifying
+      expect(subject.motivatedBy.first.rdf_subject).to eq RDFVocabularies::OA.classifying
+    end
+  end
+
+  # -----------------------------------------------
+  #  END -- Test attributes specific to this model
+  # -----------------------------------------------
+
+
   describe "#persisted?" do
     context 'with a repository' do
       before do
+        # Create inmemory repository
         repository = RDF::Repository.new
         allow(subject).to receive(:repository).and_return(repository)
       end
@@ -66,7 +178,7 @@ describe RdfTypes::VirtualCollection do
 
       context "when it is saved" do
         before do
-          subject.title = "bla"
+          subject.motivatedBy = RDFVocabularies::OA.commenting
           subject.persist!
         end
 
@@ -76,7 +188,7 @@ describe RdfTypes::VirtualCollection do
 
         context "and then modified" do
           before do
-            subject.title = "newbla"
+            subject.motivatedBy = RDFVocabularies::OA.tagging
           end
 
           it "should return true" do
@@ -88,8 +200,8 @@ describe RdfTypes::VirtualCollection do
             subject.reload
           end
 
-          it "should reset the title" do
-            expect(subject.title).to eq ["bla"]
+          it "should reset the motivatedBy" do
+            expect(subject.motivatedBy.first.rdf_subject.to_s).to eq RDFVocabularies::OA.commenting.to_s
           end
 
           it "should be persisted" do
@@ -104,13 +216,14 @@ describe RdfTypes::VirtualCollection do
     context "when the repository is set" do
       context "and the item is not a blank node" do
 
-        subject {DummyResource.new("info:fedora/example:pid")}
+        subject {RDFTypes::SemanticTagAnnotationRDF.new("123")}
 
         before do
+          # Create inmemory repository
           @repo = RDF::Repository.new
           allow(subject.class).to receive(:repository).and_return(nil)
           allow(subject).to receive(:repository).and_return(@repo)
-          subject.title = "bla"
+          subject.motivatedBy = RDFVocabularies::OA.commenting
           subject.persist!
         end
 
@@ -120,12 +233,12 @@ describe RdfTypes::VirtualCollection do
 
         it "should delete from the repository" do
           subject.reload
-          expect(subject.title).to eq ["bla"]
-          subject.title = []
-          expect(subject.title).to eq []
+          expect(subject.motivatedBy.first.rdf_subject.to_s).to eq RDFVocabularies::OA.commenting.to_s
+          subject.motivatedBy = []
+          expect(subject.motivatedBy).to eq []
           subject.persist!
           subject.reload
-          expect(subject.title).to eq []
+          expect(subject.annotatedAt).to eq []
           expect(@repo.statements.to_a.length).to eq 1 # Only the type statement
         end
       end
@@ -134,11 +247,10 @@ describe RdfTypes::VirtualCollection do
 
   describe '#destroy!' do
     before do
-      subject.title = 'Creative Commons'
       subject << RDF::Statement(RDF::DC.LicenseDocument, RDF::DC.title, 'LICENSE')
     end
 
-    subject { DummyLicense.new('http://example.org/cc')}
+    subject { RDFTypes::PersonRDF.new('456')}
 
     it 'should return true' do
       expect(subject.destroy!).to be true
@@ -152,16 +264,16 @@ describe RdfTypes::VirtualCollection do
 
     context 'with a parent' do
       before do
-        parent.license = subject
+        parent.annotatedBy = subject
       end
 
       let(:parent) do
-        DummyResource.new('http://example.org/moomi')
+        RDFTypes::SemanticTagAnnotationRDF.new('123')
       end
 
       it 'should empty the graph and remove it from the parent' do
         subject.destroy
-        expect(parent.license).to be_empty
+        expect(parent.annotatedBy).to be_empty
       end
 
       it 'should remove its whole graph from the parent' do
@@ -173,37 +285,26 @@ describe RdfTypes::VirtualCollection do
     end
   end
 
-  describe 'class_name' do
-    it 'should raise an error when not a class or string' do
-      DummyResource.property :relation, :predicate => RDF::DC.relation, :class_name => RDF::URI('http://example.org')
-      d = DummyResource.new
-      d.relation = RDF::DC.type
-      expect { d.relation.first }.to raise_error "class_name for relation is a RDF::URI; must be a class"
-    end
-
-    it 'should return nil when none is given' do
-      expect(DummyResource.properties['title'][:class_name]).to be_nil
-    end
-  end
-
   describe 'attributes' do
     before do
-      subject.license = license
-      subject.title = 'moomi'
+      subject.annotatedBy = annotatedBy
+      subject.motivatedBy = 'commenting'
     end
 
-    let(:license) { DummyLicense.new('http://example.org/license') }
+    subject {RDFTypes::SemanticTagAnnotationRDF.new("123")}
+
+    let(:annotatedBy) { RDFTypes::PersonRDF.new('456') }
 
     it 'should return an attributes hash' do
       expect(subject.attributes).to be_a Hash
     end
 
     it 'should contain data' do
-      expect(subject.attributes['title']).to eq ['moomi']
+      expect(subject.attributes['motivatedBy']).to eq ['commenting']
     end
 
     it 'should contain child objects' do
-      expect(subject.attributes['license']).to eq [license]
+      expect(subject.attributes['annotatedBy']).to eq [annotatedBy]
     end
 
     context 'with unmodeled data' do
@@ -238,7 +339,7 @@ describe RdfTypes::VirtualCollection do
       describe '#to_json' do
         it 'should return a string with correct objects' do
           json_hash = JSON.parse(subject.to_json)
-          expect(json_hash['license'].first['id']).to eq license.rdf_subject.to_s
+          expect(json_hash['annotatedBy'].first['id']).to eq annotatedBy.rdf_subject.to_s
         end
       end
     end
@@ -246,73 +347,31 @@ describe RdfTypes::VirtualCollection do
 
   describe 'property methods' do
     it 'should set and get properties' do
-      subject.title = 'Comet in Moominland'
-      expect(subject.title).to eq ['Comet in Moominland']
+      subject.motivatedBy = 'commenting'
+      expect(subject.motivatedBy).to eq ['commenting']
     end
   end
 
   describe 'child nodes' do
-    it 'should return an object of the correct class when the value is a URI' do
-      subject.license = DummyLicense.new('http://example.org/license')
-      expect(subject.license.first).to be_kind_of DummyLicense
+    it 'should return an object of the correct class when the value is built from the base URI' do
+      subject.annotatedBy = RDFTypes::PersonRDF.new('456')
+      expect(subject.annotatedBy.first).to be_kind_of RDFTypes::PersonRDF
     end
 
-    it 'should return an object with the correct URI when the value is a URI ' do
-      subject.license = DummyLicense.new('http://example.org/license')
-      expect(subject.license.first.rdf_subject).to eq RDF::URI("http://example.org/license")
+    it 'should return an object with the correct URI created with a URI' do
+      subject.annotatedBy = RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith")
+      expect(subject.annotatedBy.first.rdf_subject).to eq RDF::URI("http://vivo.cornell.edu/individual/JohnSmith")
     end
 
     it 'should return an object of the correct class when the value is a bnode' do
-      subject.license = DummyLicense.new
-      expect(subject.license.first).to be_kind_of DummyLicense
-    end
-  end
-
-  describe '#set_value' do
-    it 'should set a value in the graph' do
-      subject.set_value(RDF::DC.title, 'Comet in Moominland')
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF::DC.title).each_statement do |s|
-        expect(s.object.to_s).to eq 'Comet in Moominland'
-      end
-    end
-
-    it 'should set a value in the when given a registered property symbol' do
-      subject.set_value(:title, 'Comet in Moominland')
-      expect(subject.title).to eq ['Comet in Moominland']
-    end
-
-    it "raise an error if the value is not a URI, Node, Literal, RdfResource, or string" do
-      expect{subject.set_value(RDF::DC.title, Object.new)}.to raise_error
-    end
-
-    it "should be able to accept a subject" do
-      expect{subject.set_value(RDF::URI("http://opaquenamespace.org/jokes"), RDF::DC.title, 'Comet in Moominland')}.not_to raise_error
-      expect(subject.query(:subject => RDF::URI("http://opaquenamespace.org/jokes"), :predicate => RDF::DC.title).statements.to_a.length).to eq 1
-    end
-  end
-  describe '#get_values' do
-    before do
-      subject.title = ['Comet in Moominland', "Finn Family Moomintroll"]
-    end
-
-    it 'should return values for a predicate uri' do
-      expect(subject.get_values(RDF::DC.title)).to eq ['Comet in Moominland', 'Finn Family Moomintroll']
-    end
-
-    it 'should return values for a registered predicate symbol' do
-      expect(subject.get_values(:title)).to eq ['Comet in Moominland', 'Finn Family Moomintroll']
-    end
-
-    it "should return values for other subjects if asked" do
-      expect(subject.get_values(RDF::URI("http://opaquenamespace.org/jokes"),:title)).to eq []
-      subject.set_value(RDF::URI("http://opaquenamespace.org/jokes"), RDF::DC.title, 'Comet in Moominland')
-      expect(subject.get_values(RDF::URI("http://opaquenamespace.org/jokes"),:title)).to eq ["Comet in Moominland"]
+      subject.annotatedBy = RDFTypes::PersonRDF.new
+      expect(subject.annotatedBy.first).to be_kind_of RDFTypes::PersonRDF
     end
   end
 
   describe '#type' do
     it 'should return the type configured on the parent class' do
-      expect(subject.type).to eq [DummyResource.type]
+      expect(subject.type).to eq [RDFTypes::SemanticTagAnnotationRDF.type]
     end
 
     it 'should set the type' do
@@ -328,20 +387,20 @@ describe RdfTypes::VirtualCollection do
   end
 
   describe '#rdf_label' do
+    subject {RDFTypes::SemanticTagAnnotationRDF.new("123")}
+
     it 'should return an array of label values' do
       expect(subject.rdf_label).to be_kind_of Array
     end
 
-    it 'should return the default label values' do
-      subject.title = 'Comet in Moominland'
-      expect(subject.rdf_label).to eq ['Comet in Moominland']
+    it 'should return the default label as URI when no title property exists' do
+      expect(subject.rdf_label).to eq [RDF::URI("#{RDFTypes::SemanticTagAnnotationRDF.base_uri}/#{RDFTypes::SemanticTagAnnotationRDF.id_prefix}123")]
     end
 
     it 'should prioritize configured label values' do
       custom_label = RDF::URI('http://example.org/custom_label')
       subject.class.configure :rdf_label => custom_label
       subject << RDF::Statement(subject.rdf_subject, custom_label, RDF::Literal('New Label'))
-      subject.title = 'Comet in Moominland'
       expect(subject.rdf_label).to eq ['New Label']
     end
   end
@@ -359,14 +418,14 @@ describe RdfTypes::VirtualCollection do
 
   describe 'editing the graph' do
     it 'should write properties when statements are added' do
-      subject << RDF::Statement.new(subject.rdf_subject, RDF::DC.title, 'Comet in Moominland')
-      expect(subject.title).to include 'Comet in Moominland'
+      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::OA.motivatedBy, 'commenting')
+      expect(subject.motivatedBy).to include 'commenting'
     end
 
     it 'should delete properties when statements are removed' do
-      subject << RDF::Statement.new(subject.rdf_subject, RDF::DC.title, 'Comet in Moominland')
-      subject.delete RDF::Statement.new(subject.rdf_subject, RDF::DC.title, 'Comet in Moominland')
-      expect(subject.title).to eq []
+      subject << RDF::Statement.new(subject.rdf_subject, RDFVocabularies::OA.motivatedBy, 'commenting')
+      subject.delete RDF::Statement.new(subject.rdf_subject, RDFVocabularies::OA.motivatedBy, 'commenting')
+      expect(subject.motivatedBy).to eq []
     end
   end
 
@@ -385,10 +444,10 @@ describe RdfTypes::VirtualCollection do
         property :creator, :predicate => RDF::DC.creator, :class_name => 'DummyPerson'
       end
 
-      DummyResource.property :item, :predicate => RDF::DC.relation, :class_name => DummyDocument
+      RDFTypes::SemanticTagAnnotationRDF.property :item, :predicate => RDF::DC.relation, :class_name => DummyDocument
     end
 
-    subject { DummyResource.new }
+    subject { RDFTypes::SemanticTagAnnotationRDF.new }
 
     let (:document1) do
       d = DummyDocument.new

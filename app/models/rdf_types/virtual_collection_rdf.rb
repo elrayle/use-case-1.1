@@ -3,30 +3,23 @@ module RDFTypes
 
     @id_prefix="vc"
 
-    # configure :type => RdfVocabularies::CO.List, :base_uri => 'http://localhost:3000'
-    configure :type => RDFVocabularies::ORE.Aggregation, :base_uri => 'http://localhost:3000/individual/'
+    # configure :type => RdfVocabularies::CO.List, :base_uri => Rails.configuration.urigenerator.base_uri, repository => :default
+    configure :type => RDFVocabularies::ORE.Aggregation, :base_uri => Rails.configuration.urigenerator.base_uri, :repository => :default
 
     # extended properties for LD4L implementation
     property :title,       :predicate => RDF::DC.title
     property :description, :predicate => RDF::DC.description
-    property :owner,       :predicate => RDFVocabularies::DCTERMS.creator
+    property :owner,       :predicate => RDFVocabularies::DCTERMS.creator, :class_name => RDFTypes::PersonRDF
 
     # # properties from CO.List
     # property :size,        :predicate => RdfVocabularies::CO.size
-    # property :firstItem,   :predicate => RdfVocabularies::CO.firstitem
-    # property :item,        :predicate => RdfVocabularies::CO.item               # TODO: how to make multiple???
-    # property :lastItem,    :predicate => RdfVocabularies::CO.lastitem
+    # property :firstItem,   :predicate => RdfVocabularies::CO.firstitem, :class_name => RDFTypes::VirtualCollectionItemRDF
+    # property :item,        :predicate => RdfVocabularies::CO.item,      :class_name => RDFTypes::VirtualCollectionItemRDF         # multiple values
+    # property :lastItem,    :predicate => RdfVocabularies::CO.lastitem,  :class_name => RDFTypes::VirtualCollectionItemRDF
 
     # properties from ORE.Aggregation
-#    property :aggregates,   :predicate => RdfVocabularies::ORE.aggregates,   :type => URI        # TODO: how to make multiple???
-    property :aggregates,   :predicate => RDFVocabularies::ORE.aggregates        # TODO: how to make multiple???
+    property :aggregates,   :predicate => RDFVocabularies::ORE.aggregates   # multiple values
 
-    def test_get_uri
-      test_uri = get_uri('987')
-      test_uri = self::get_uri('876')
-      puts test_uri
-    end
   end
 end
-
 

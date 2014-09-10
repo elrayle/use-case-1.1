@@ -36,4 +36,31 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
+
+  # -----------------------------------------
+  #  Custom configurations for this app
+  # -----------------------------------------
+  # rails app configuration
+  config.appconfig = ActiveSupport::OrderedOptions.new
+  # config.appconfig.wifi_available  = true   # TODO REMOVE THIS LINE
+  config.appconfig.webapp_base_uri = 'http://localhost:3000'
+
+  # triplestore configuration
+  config.triplestore = ActiveSupport::OrderedOptions.new
+  config.triplestore.default_repository = 'sqlite3:db/triples.sqlite'
+  config.triplestore.person_repository  = 'sqlite3:db/person_triples.sqlite'
+
+  # URI generation configuration
+  config.urigenerator = ActiveSupport::OrderedOptions.new
+  config.urigenerator.base_uri     = 'http://localhost:3000'
+  config.urigenerator.bibliographic_base_uri = 'http://da-rdf.library.cornell.edu/individual'
+  config.urigenerator.person_base_uri        = 'http://vivo.cornell.edu/individual'
+
+  # controlled vocabularies configuration
+  # TODO Add these to add controlled vocabularies for semantic tag annotations
+  # config.authority = ActiveSupport::OrderedOptions.new
+  # config.authority.discipline_base_uri       = "#{Rails.configuration.appconfig.webapp_base_uri}/authorities/local/discipline"
+  # config.authority.subdiscipline_partial_uri = 'subdiscipline'
+  # config.authority.subresource_type_base_uri = "#{Rails.configuration.appconfig.webapp_base_uri}/authorities/local/subresource_type"
+
 end

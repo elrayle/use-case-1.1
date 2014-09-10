@@ -1,6 +1,15 @@
 require File.expand_path('../boot', __FILE__)
 
-require 'rails/all'
+# NOTE: Commented out 'rails/all' to avoid including active_model.  Have to include others manually.
+# require 'rails/all'
+require "action_controller/railtie"
+require "action_mailer/railtie"
+# require "active_resource/railtie"
+require "rails/test_unit/railtie"
+require "sprockets/railtie"
+# END manual includes
+
+
 require 'active_triples'
 
 # Require the gems listed in Gemfile, including any gems

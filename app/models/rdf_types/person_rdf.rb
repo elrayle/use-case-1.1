@@ -3,6 +3,6 @@ module RDFTypes
 
     @id_prefix="p"
 
-    configure :type => RDF::FOAF.Person, :base_uri => 'http://vivo.cornell.edu/individual/'
+    configure :type => RDF::FOAF.Person, :base_uri => Rails.configuration.urigenerator.person_base_uri, :repository => :default
   end
 end
