@@ -6,7 +6,7 @@ module RDFVocabularies
     term :Proxy
 
     # Property definitions ORE.Aggregation
-    property :aggregates        # URI of each list item in this Aggregation -- TODO: How to have multiple items?
+    property :aggregates        # URI of each list item in this Aggregation
 
     # Property definitions for ORE.Proxy
     property :proxyFor          # URI of list item

@@ -46,7 +46,7 @@ Rails.application.configure do
   # triplestore configuration
   config.triplestore = ActiveSupport::OrderedOptions.new
   config.triplestore.default_repository = 'sqlite3:db/triples.sqlite'
-  config.triplestore.person_repository  = 'sqlite3:db/person_triples.sqlite'
+  # config.triplestore.person_repository  = 'sqlite3:db/person_triples.sqlite'   # example of using multiple triplestores
 
   # URI generation configuration
   config.urigenerator = ActiveSupport::OrderedOptions.new

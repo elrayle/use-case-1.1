@@ -207,6 +207,328 @@ describe 'VirtualCollectionRDF' do
   # -----------------------------------------------
 
 
+  # -----------------------------------------------------
+  #  START -- Test helper methods specific to this model
+  # -----------------------------------------------------
+
+  describe "create" do
+    it "should create a RDFTypes::VirtualCollectionRDF instance" do
+      vc = RDFTypes::VirtualCollectionRDF.create(title:       "Test Title",
+                                                 description: "Test description of virtual collection.",
+                                                 owner:       RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith"))
+      expect(vc).to be_a(RDFTypes::VirtualCollectionRDF)
+    end
+
+    it "should create a virtual collection with passed in properties excluding an id" do
+      vc = RDFTypes::VirtualCollectionRDF.create(title:       "Test Title",
+                                                 description: "Test description of virtual collection.",
+                                                 owner:       RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith"))
+      expect(vc.rdf_subject.to_s).to start_with "#{RDFTypes::VirtualCollectionRDF.base_uri}/#{RDFTypes::VirtualCollectionRDF.id_prefix}"
+      expect(vc.title).to eq ["Test Title"]
+      expect(vc.description).to eq ["Test description of virtual collection."]
+      expect(vc.owner.first.rdf_subject).to eq RDF::URI("http://vivo.cornell.edu/individual/JohnSmith")
+    end
+
+    it "should create a virtual collection with partial id" do
+      vc = RDFTypes::VirtualCollectionRDF.create(id:          "123",
+                                                 title:       "Test Title",
+                                                 description: "Test description of virtual collection.",
+                                                 owner:       RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith"))
+      expect(vc.rdf_subject.to_s).to eq "#{RDFTypes::VirtualCollectionRDF.base_uri}/#{RDFTypes::VirtualCollectionRDF.id_prefix}123"
+      expect(vc.title).to eq ["Test Title"]
+      expect(vc.description).to eq ["Test description of virtual collection."]
+      expect(vc.owner.first.rdf_subject).to eq RDF::URI("http://vivo.cornell.edu/individual/JohnSmith")
+    end
+
+    it "should create a virtual collection with string uri id" do
+      vc = RDFTypes::VirtualCollectionRDF.create(id:          "http://example.org/individual/vc123",
+                                                 title:       "Test Title",
+                                                 description: "Test description of virtual collection.",
+                                                 owner:       RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith"))
+      expect(vc.rdf_subject.to_s).to eq "http://example.org/individual/vc123"
+      expect(vc.title).to eq ["Test Title"]
+      expect(vc.description).to eq ["Test description of virtual collection."]
+      expect(vc.owner.first.rdf_subject).to eq RDF::URI("http://vivo.cornell.edu/individual/JohnSmith")
+    end
+
+    it "should create a virtual collection with URI id" do
+      vc = RDFTypes::VirtualCollectionRDF.create(id:          RDF::URI("http://example.org/individual/vc123"),
+                                                 title:       "Test Title",
+                                                 description: "Test description of virtual collection.",
+                                                 owner:       RDFTypes::PersonRDF.new("http://vivo.cornell.edu/individual/JohnSmith"))
+      expect(vc.rdf_subject.to_s).to eq "http://example.org/individual/vc123"
+      expect(vc.title).to eq ["Test Title"]
+      expect(vc.description).to eq ["Test description of virtual collection."]
+      expect(vc.owner.first.rdf_subject).to eq RDF::URI("http://vivo.cornell.edu/individual/JohnSmith")
+    end
+  end
+
+  describe "add_item_with_content" do
+    it "should return a RDFTypes::VirtualCollectionItemRDF instance" do
+      vci = subject.add_item_with_content(RDF::URI("http://example.org/individual/b1"))
+      expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+    end
+
+    it "should add a single item to an empty set" do
+      subject.aggregates = []
+      subject.add_item_with_content(RDF::URI("http://example.org/individual/b1"))
+      expect(subject.aggregates.first.rdf_subject).to eq RDF::URI("http://example.org/individual/b1")
+    end
+
+    it "should add a single item to an existing set" do
+      subject.aggregates = RDF::URI("http://example.org/individual/b1")
+      subject.add_item_with_content(RDF::URI("http://example.org/individual/b2"))
+      expect(subject.aggregates[0].rdf_subject).to eq RDF::URI("http://example.org/individual/b1")
+      expect(subject.aggregates[1].rdf_subject).to eq RDF::URI("http://example.org/individual/b2")
+    end
+
+    it "should generate the item instance for a single item" do
+      vci = subject.add_item_with_content(RDF::URI("http://example.org/individual/b1"))
+      expect(vci.proxyFor.first.rdf_subject).to eq RDF::URI("http://example.org/individual/b1")
+      expect(vci.proxyIn.first).to eq subject
+    end
+  end
+
+  describe "add_items_with_content" do
+    it "should return an array" do
+      vci_array = subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                                  RDF::URI("http://example.org/individual/b2"),
+                                                  RDF::URI("http://example.org/individual/b3")])
+      expect(vci_array).to be_a(Array)
+    end
+
+    it "should return an array of RDFTypes::VirtualCollectionItemRDF instances" do
+      vci_array = subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                                  RDF::URI("http://example.org/individual/b2"),
+                                                  RDF::URI("http://example.org/individual/b3")])
+      vci_array.each do |vci|
+        expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+      end
+    end
+
+    it "should add multiple items to an empty set" do
+      subject.aggregates = []
+      subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                      RDF::URI("http://example.org/individual/b2"),
+                                      RDF::URI("http://example.org/individual/b3")])
+      aggregates = subject.aggregates
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+    end
+
+    it "should add a multiple items to an existing set" do
+      subject.aggregates = RDF::URI("http://example.org/individual/b1")
+      subject.add_items_with_content([RDF::URI("http://example.org/individual/b2"),
+                                      RDF::URI("http://example.org/individual/b3"),
+                                      RDF::URI("http://example.org/individual/b4")])
+      aggregates = subject.aggregates
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+      expect(aggregates).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b4"))
+    end
+
+    it "should return an array of item instances for each of the multiple items" do
+      vci_array = subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                                  RDF::URI("http://example.org/individual/b2"),
+                                                  RDF::URI("http://example.org/individual/b3")])
+      vci_array.each do |vci|
+        expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+        expect(vci.proxyIn.first).to eq subject
+      end
+      results = []
+      vci_array.each do |vci|
+        results << vci.proxyFor.first
+      end
+      expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+      expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+      expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+    end
+  end
+
+  describe "get_items_content" do
+    it "should return empty array when no items exist" do
+      subject.aggregates = []
+      content_array = subject.get_items_content
+      expect(content_array).to eq []
+    end
+
+    it "should return array" do
+      subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                      RDF::URI("http://example.org/individual/b2"),
+                                      RDF::URI("http://example.org/individual/b3")])
+      content_array = subject.get_items_content
+      expect(content_array).to be_a(Array)
+    end
+
+    context "when start and limit are not specified" do
+      it "should return array of all content aggregated by subject" do
+        subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                        RDF::URI("http://example.org/individual/b2"),
+                                        RDF::URI("http://example.org/individual/b3")])
+        content_array = subject.get_items_content
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+      end
+
+      it "should not return any content not aggregated by subject" do
+        vc = RDFTypes::VirtualCollectionRDF.new('999')
+        vc.add_item_with_content(RDF::URI("http://example.org/individual/b999"))
+
+        subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                        RDF::URI("http://example.org/individual/b2"),
+                                        RDF::URI("http://example.org/individual/b3")])
+
+        content_array = subject.get_items_content
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+        expect(content_array).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+        expect(content_array.size).to eq 3
+      end
+    end
+
+    context "when limit is specified" do
+      it "should return array of content with max size=limit" do
+        pending "this needs to be implemented"
+      end
+    end
+
+    context "when start is specified" do
+      it "should return array of content_beginning with item at position=start" do
+        # TODO: What does _start_ mean in ActiveTriples?  Does it support this kind of query?
+        pending "this needs to be implemented"
+      end
+    end
+
+    context "when start and limit are specified" do
+      it "should return an array of content with max size=limit beginning with item at position=start" do
+        pending "this needs to be implemented"
+      end
+    end
+  end
+
+  describe "get_items" do
+    it "should return empty array when no items exist" do
+      subject.aggregates = []
+      vci_array = subject.get_items
+      expect(vci_array).to eq []
+    end
+
+    it "should return array" do
+      subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                      RDF::URI("http://example.org/individual/b2"),
+                                      RDF::URI("http://example.org/individual/b3")])
+      vci_array = subject.get_items
+      expect(vci_array).to be_a(Array)
+    end
+
+    it "should return array of RDFTypes::VirtualCollectionItemRDF instances" do
+      subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                      RDF::URI("http://example.org/individual/b2"),
+                                      RDF::URI("http://example.org/individual/b3")])
+      vci_array = subject.get_items
+      vci_array.each do |vci|
+        expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+      end
+    end
+
+    context "when start and limit are not specified" do
+      context "and objects not persisted" do
+        it "should return empty array" do
+          subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                          RDF::URI("http://example.org/individual/b2"),
+                                          RDF::URI("http://example.org/individual/b3")])
+          vci_array = subject.get_items
+          expect(vci_array.size).to eq(0)
+        end
+      end
+
+      context "and objects are persisted" do
+        it "should return array of all RDFTypes::VirtualCollectionItemRDF instances for content aggregated by subject" do
+          vci_array = subject.add_items_with_content([RDF::URI("http://example.org/individual/b1"),
+                                          RDF::URI("http://example.org/individual/b2"),
+                                          RDF::URI("http://example.org/individual/b3")])
+          subject.persist!
+          vci_array.each { |vci| vci.persist! }
+
+          vci_array = subject.get_items
+  puts()
+  puts("******************************")
+  puts("vci_array=#{vci_array}")
+  puts("******************************")
+          vci_array.each do |vci|
+            expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+            expect(vci.proxyIn.first).to eq subject
+          end
+          results = []
+          vci_array.each { |vci| results << vci.proxyFor.first }
+          expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b1"))
+          expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b2"))
+          expect(results).to include ActiveTriples::Resource.new(RDF::URI("http://example.org/individual/b3"))
+          expect(vci_array.size).to eq(3)
+        end
+
+        it "should not return any RDFTypes::VirtualCollectionItemRDF instances for content not aggregated by subject" do
+          pending "this needs to be implemented"
+        end
+      end
+    end
+
+    context "when limit is specified" do
+      it "should return array of RDFTypes::VirtualCollectionItemRDF instances with max size=limit" do
+        pending "this needs to be implemented"
+      end
+    end
+
+    context "when start is specified" do
+      it "should return array of RDFTypes::VirtualCollectionItemRDF instances_beginning with item at position=start" do
+        # TODO: What does _start_ mean in ActiveTriples?  Does it support this kind of query?
+        pending "this needs to be implemented"
+      end
+    end
+
+    context "when start and limit are specified" do
+      it "should return an array of RDFTypes::VirtualCollectionItemRDF instances with max size=limit beginning with item at position=start" do
+        pending "this needs to be implemented"
+      end
+    end
+  end
+
+  describe "find_item_with_content" do
+    pending "this needs to be implemented"
+  end
+
+  describe "get_item_content_at" do
+    pending "this needs to be implemented"
+  end
+
+  describe "get_item_at" do
+    pending "this needs to be implemented"
+  end
+
+  describe "has_item_at?" do
+    pending "this needs to be implemented"
+  end
+
+  describe "has_item_content?" do
+    pending "this needs to be implemented"
+  end
+
+  describe "remove_item_with_content" do
+    pending "this needs to be implemented"
+  end
+
+  describe "is_ordered?" do
+    pending "this needs to be implemented"
+  end
+
+  # ---------------------------------------------------
+  #  END -- Test helper methods specific to this model
+  # ---------------------------------------------------
+
+
   describe "#persisted?" do
     context 'with a repository' do
       before do

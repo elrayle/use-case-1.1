@@ -3,18 +3,98 @@ module RDFTypes
 
     @id_prefix="vci"
 
-    # configure :type => RDFVocabularies::CO.ListItem, :base_uri => Rails.configuration.urigenerator.base_uri, repository => :default
-    configure :type => RDFVocabularies::ORE.Proxy, :base_uri => Rails.configuration.urigenerator.base_uri, :repository => :default
+    ORE_UNORDERED_LIST_ITEM_TYPE = RDFVocabularies::ORE.Proxy
+    ORE_ORDERED_LIST_ITEM_TYPE   = RDFVocabularies::ORE.Proxy
+    # CO_UNORDERED_LIST_ITEM_TYPE  = RDFVocabularies::CO.Element
+    # CO_ORDERED_LIST_ITEM_TYPE    = RDFVocabularies::CO.ListItem
 
-    # # properties from CO.ListItem
-    # property :index,       :predicate => RDFVocabularies::CO.index
-    # property :itemContent, :predicate => RDFVocabularies::CO.itemContent
-    # property :nextItem,    :predicate => RDFVocabularies::CO.nextItem,    :class_name => RDFTypes::VirtualCollectionItemRDF
+
+    # configure :base_uri => Rails.configuration.urigenerator.base_uri, repository => :default
+    configure :type => ORE_UNORDERED_LIST_ITEM_TYPE, :base_uri => Rails.configuration.urigenerator.base_uri, :repository => :default
+
+    # common properties
+    property :type,          :predicate => RDF::type             # multiple: CO.Element, CO.ListItem, ORE.Proxy
+    property :contributor,   :predicate => RDF::DC.contributor,            :class_name => RDFTypes::PersonRDF   # TODO User who added this item to the Virtual Collection (default=Virtual Collection's owner)
+
+    # # properties from CO.Element
+    # property :itemContent,   :predicate => RDFVocabularies::CO.itemContent
+    #
+    # # extended properties from CO.ListItem (also uses properties for CO.Element)
+    # property :index,         :predicate => RDFVocabularies::CO.index                                            # TODO Maintenance of index is onerous as an insert requires touching O(N-index) items, but having an index will help with retrieving ranges of items
+    # property :nextItem,      :predicate => RDFVocabularies::CO.nextItem,   :class_name => RDFTypes::VirtualCollectionItemRDF
+    # property :previousItem,  :predicate => RDFVocabularies::CO.nextItem,   :class_name => RDFTypes::VirtualCollectionItemRDF
 
     # properties from ORE.Proxy
-    property :proxyFor,         :predicate => RDFVocabularies::ORE.proxyFor
-    property :proxyIn,          :predicate => RDFVocabularies::ORE.proxyIn, :class_name => RDFTypes::VirtualCollectionRDF
-    property :next,             :predicate => RDFVocabularies::IANA.next,   :class_name => RDFTypes::VirtualCollectionItemRDF
-    property :contributor,      :predicate => RDF::DC.contributor,          :class_name => RDFTypes::PersonRDF   # TODO User who added this item to the Virtual Collection (default=Virtual Collection's owner)
+    property :proxyFor,      :predicate => RDFVocabularies::ORE.proxyFor
+    property :proxyIn,       :predicate => RDFVocabularies::ORE.proxyIn,   :class_name => RDFTypes::VirtualCollectionRDF
+    property :next,          :predicate => RDFVocabularies::IANA.next,     :class_name => RDFTypes::VirtualCollectionItemRDF
+    property :previous,      :predicate => RDFVocabularies::IANA.previous, :class_name => RDFTypes::VirtualCollectionItemRDF
+
+
+    # --------------------- #
+    #    HELPER METHODS     #
+    # --------------------- #
+
+    # Create a virtual collection item in one step passing in the required information.  ORE ontology only.
+    #   options:
+    #     id                 (optional) - used to assign RDFSubject
+    #                - full URI   - used as passed in
+    #                - partial id - uri generated from base_uri + id_prefix + id
+    #                - nil        - uri generated from base_uri + id_prefix + random_number
+    #     virtual_collection (required) - collection to which item is being added
+    #     content            (required) - content for the item being added to the collection
+    #     insert_position    (optional) - used for ordered lists to place an item at a specific location (default - appends)
+    #     contributor        (optional) - assumed to be list owner if not specified
+    def self.create( options = {} )
+      # validate item was passed in
+      content = options[:content] || nil
+      raise ArgumentError, "content is required" if content.nil?
+
+      # validate virtual_collection is of correct type
+      virtual_collection = options[:virtual_collection] || nil
+      raise ArgumentError, "virtual_collection is not RDFTypes::VirtualCollectionRDF" unless virtual_collection.kind_of?(RDFTypes::VirtualCollectionRDF)
+
+      id  = options[:id] || generate_id
+      vci = RDFTypes::VirtualCollectionItemRDF.new(id)
+
+      # set ORE ontology properties
+      vci.proxyFor    = content
+      vci.proxyIn     = virtual_collection.kind_of?(String) ? RDF::URI(virtual_collection) : virtual_collection
+
+      # # set Collections ontology properties
+      # vci.itemContent = content
+
+      # types = [ CO_UNORDERED_LIST_ITEM_TYPE, ORE_UNORDERED_LIST_ITEM_TYPE ]
+      types = ORE_UNORDERED_LIST_ITEM_TYPE
+      insert_position = options[:insert_position] || nil
+      unless insert_position.nil?
+        # TODO: handle inserting item into an ordered list at position specified
+        # set nextItem, previousItem, next, and previous properties
+        # update other items that are near it
+        # TODO: what happens if prev and next aren't set on the
+        # types = [ CO_ORDERED_LIST_ITEM_TYPE, ORE_ORDERED_LIST_ITEM_TYPE ]
+        types = ORE_ORDERED_LIST_ITEM_TYPE
+      end
+      vci.contributor = options[:contributor] || []   # TODO default to vc.owner
+
+      vci.type = types
+      vci
+    end
+
+
+    # Returns an array of the RDFTypes::VirtualCollectionItemRDF instances for the items in the virtual collection
+    # TODO: How to begin at start and limit to number of returned items, effectively handling ranges of data.
+    def self.get_range( virtual_collection, start, limit )
+      # TODO: Stubbed to return all items.  Need to implement start and limit features.
+      r = ActiveTriples::Repositories.repositories[RDFTypes::VirtualCollectionItemRDF.repository]
+      vci_array = []
+      r.query(:predicate => RDFVocabularies::ORE.proxyIn,
+              :object => virtual_collection.rdf_subject).statements.each do |s|
+        vci = RDFTypes::VirtualCollectionItemRDF.new(s.subject)
+        vci_array << vci
+      end
+      vci_array
+    end
+
   end
 end

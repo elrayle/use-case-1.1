@@ -1,5 +1,40 @@
 == README
 
+[[ Important: Under Construction - not fully functional ]]
+
+# Description
+
+This code contains classes that model virtual collections of bibliographic references along with models of annotations
+following the open annotation ontology standard.  The models hold information in a single object in memory and persist
+to multiple triples in a triple store based on the defined properties and relationships.
+
+
+# Installation
+
+## Pull
+
+Pull code from GitHub and run RSpec tests using the following command.
+
+## Test
+
+```
+bundle exec rspec spec/models/rdf_types
+```
+
+You should get 401 examples (passing), 11 failures
+
+### Known failures
+
+There are several known failures at this point in development:
+
+1) multiple values – Tests that check for the ability to change multiple values fail. I believe I have a workaround for this. Instead of directly changing the array returned when you get the values, dup the array and change the duped array, then set the value of the attribute to the duped array.
+
+2) motivatedBy – For comments, tags, and semantic tags, the motivatedBy property should have a default value of OA.commenting, OA.tagging, and OA.tagging, respectively.
+
+3) The remaining six failures are for the TagAnnotationRDF and SemanticTagAnnotationRDF tests. The 'attributes with an model data' tests are failing for both. The tests only fail when all tests are run it once. If you run each individually, they pass. Not sure why this is happening. Need to explore deeper.
+
+
+
 This README would normally document whatever steps are necessary to get the
 application up and running.
 

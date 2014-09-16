@@ -58,8 +58,27 @@ describe 'VirtualCollectionItemRDF' do
   # -------------------------------------------------
 
   describe 'type' do
-    it "should be an RDFVocabularies::ORE.Proxy" do
-      expect(subject.type.first.value).to eq RDFVocabularies::ORE.Proxy.value
+    it "should default to an unordered collection" do
+      expect(subject.type.first.rdf_subject).to eq RDFVocabularies::ORE.Proxy
+    end
+  end
+
+  describe 'proxyFor' do
+    it "should be empty array if we haven't set it" do
+      expect(subject.proxyFor).to match_array([])
+    end
+
+    it "should be settable" do
+      subject.proxyFor = RDF::URI("http://example.org/b1")
+      expect(subject.proxyFor.first.rdf_subject).to eq RDF::URI("http://example.org/b1")
+    end
+
+    it "should be changeable" do
+      orig_proxy_for = RDF::URI("http://example.org/b1")
+      new_proxy_for  = RDF::URI("http://example.org/b1_NEW")
+      subject.proxyFor = orig_proxy_for
+      subject.proxyFor = new_proxy_for
+      expect(subject.proxyFor.first.rdf_subject).to eq new_proxy_for
     end
   end
 
@@ -128,6 +147,142 @@ describe 'VirtualCollectionItemRDF' do
   # -----------------------------------------------
 
 
+  # -----------------------------------------------------
+  #  START -- Test helper methods specific to this model
+  # -----------------------------------------------------
+
+  describe "create" do
+    it "should create a RDFTypes::VirtualCollectionItemRDF instance" do
+      vc  = RDFTypes::VirtualCollectionRDF.new
+      vci = RDFTypes::VirtualCollectionItemRDF.create(content:   RDF::URI("http://example.org/individual/b1"),
+                                                      virtual_collection: vc)
+      expect(vci).to be_a(RDFTypes::VirtualCollectionItemRDF)
+    end
+
+    context "when id is not passed in" do
+      it "should generate an id with random ending" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(content:   RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.rdf_subject.to_s).to start_with "#{RDFTypes::VirtualCollectionItemRDF.base_uri}/#{RDFTypes::VirtualCollectionItemRDF.id_prefix}"
+      end
+
+      it "should set property values" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(content:   RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.proxyFor.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        expect(vci.proxyIn.first).to eq vc
+        expect(vci.next).to eq []
+        expect(vci.previous).to eq []
+        # expect(vci.contentContent.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        # expect(vci.index).to eq []
+        # expect(vci.nextItem).to eq []
+        # expect(vci.previousItem).to eq []
+        expect(vci.contributor).to eq []
+      end
+    end
+
+    context "when partial id is passed in" do
+      it "should generate an id ending with partial id" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(id:     "123",
+                                                       content: RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.rdf_subject.to_s).to eq "#{RDFTypes::VirtualCollectionItemRDF.base_uri}/#{RDFTypes::VirtualCollectionItemRDF.id_prefix}123"
+      end
+
+      it "should set property values" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(id:      "123",
+                                                        content: RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.proxyFor.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        expect(vci.proxyIn.first).to eq vc
+        expect(vci.next).to eq []
+        expect(vci.previous).to eq []
+        # expect(vci.contentContent.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        # expect(vci.index).to eq []
+        # expect(vci.nextItem).to eq []
+        # expect(vci.previousItem).to eq []
+        expect(vci.contributor).to eq []
+      end
+    end
+
+    context "when URI id is passed in" do
+      it "should use passed in id" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(id:      "http://example.org/individual/vc123",
+                                                        content: RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.rdf_subject.to_s).to eq "http://example.org/individual/vc123"
+      end
+
+      it "should set property values" do
+        vc  = RDFTypes::VirtualCollectionRDF.new
+        vci = RDFTypes::VirtualCollectionItemRDF.create(id:      "http://example.org/individual/vc123",
+                                                        content: RDF::URI("http://example.org/individual/b1"),
+                                                        virtual_collection: vc)
+        expect(vci.proxyFor.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        expect(vci.proxyIn.first).to eq vc
+        expect(vci.next).to eq []
+        expect(vci.previous).to eq []
+        # expect(vci.itemContent.first.rdf_subject.to_s).to eq "http://example.org/individual/b1"
+        # expect(vci.index).to eq []
+        # expect(vci.nextItem).to eq []
+        # expect(vci.previousItem).to eq []
+        expect(vci.contributor).to eq []
+      end
+    end
+
+    context "when collection is unordered" do
+      context "and insert_position is missing" do
+        it "should add item without setting ordered properties" do
+          pending "this needs to be implemented"
+        end
+      end
+
+      context "and insert position is passed in" do
+        it "should convert the list from unordered to ordered" do
+          pending "this needs to be implemented"
+        end
+
+        it "should set ordered properties for new item" do
+          pending "this needs to be implemented"
+        end
+
+        it "should not change any other items in the collection" do
+          # TODO Is this really the behavior we want when converting from unordered to ordered?
+          pending "this needs to be implemented"
+        end
+      end
+    end
+
+    context "when collection is ordered" do
+      context "and insert_position is missing" do
+        it "should append item to the end of the collection" do
+          pending "this needs to be implemented"
+        end
+      end
+
+      context "and insert position is passed in" do
+        it "should set ordered properties for new item" do
+          pending "this needs to be implemented"
+        end
+
+        it "should not change any other items in the collection" do
+          # TODO Is this really the behavior we want for ordered lists to be partially ordered?
+          pending "this needs to be implemented"
+        end
+      end
+    end
+  end
+
+  # ---------------------------------------------------
+  #  END -- Test helper methods specific to this model
+  # ---------------------------------------------------
+
+
   describe "#persisted?" do
     context 'with a repository' do
       before do
@@ -190,6 +345,9 @@ describe 'VirtualCollectionItemRDF' do
           allow(subject.class).to receive(:repository).and_return(nil)
           allow(subject).to receive(:repository).and_return(@repo)
           subject.contributor = "John Smith"
+          a_virtual_collection = RDFTypes::VirtualCollectionRDF.new('1')
+          subject.proxyIn = a_virtual_collection
+          subject.proxyFor = RDF::URI("http://example.org/b1")
           subject.persist!
         end
 
@@ -201,6 +359,38 @@ describe 'VirtualCollectionItemRDF' do
           subject.reload
           expect(subject.contributor).to eq ["John Smith"]
           subject.contributor = []
+          subject.proxyIn = []
+          subject.proxyFor = []
+          expect(subject.contributor).to eq []
+          subject.persist!
+          subject.reload
+          expect(subject.contributor).to eq []
+          expect(@repo.statements.to_a.length).to eq 1 # Only the type statement
+        end
+      end
+
+      context "and the item is created by create method" do
+
+        subject { RDFTypes::VirtualCollectionItemRDF.create(id: "123", virtual_collection: RDFTypes::VirtualCollectionRDF.new('1'), content: RDF::URI("http://example.org/b1"), contributor: "John Smith")}
+
+        before do
+          # Create inmemory repository
+          @repo = RDF::Repository.new
+          allow(subject.class).to receive(:repository).and_return(nil)
+          allow(subject).to receive(:repository).and_return(@repo)
+          subject.persist!
+        end
+
+        it "should persist to the repository" do
+          expect(@repo.statements.first).to eq subject.statements.first
+        end
+
+        it "should delete from the repository" do
+          subject.reload
+          expect(subject.contributor).to eq ["John Smith"]
+          subject.contributor = []
+          subject.proxyIn = []
+          subject.proxyFor = []
           expect(subject.contributor).to eq []
           subject.persist!
           subject.reload
@@ -332,23 +522,6 @@ describe 'VirtualCollectionItemRDF' do
     it 'should return an object of the correct class when the value is a bnode' do
       subject.contributor = RDFTypes::PersonRDF.new
       expect(subject.contributor.first).to be_kind_of RDFTypes::PersonRDF
-    end
-  end
-
-  describe '#type' do
-    it 'should return the type configured on the parent class' do
-      expect(subject.type).to eq [RDFTypes::VirtualCollectionItemRDF.type]
-    end
-
-    it 'should set the type' do
-      subject.type = RDF::URI('http://example.org/AnotherClass')
-      expect(subject.type).to eq [RDF::URI('http://example.org/AnotherClass')]
-    end
-
-    it 'should be the type in the graph' do
-      subject.query(:subject => subject.rdf_subject, :predicate => RDF.type).statements do |s|
-        expect(s.object).to eq RDF::URI('http://example.org/AnotherClass')
-      end
     end
   end
 
